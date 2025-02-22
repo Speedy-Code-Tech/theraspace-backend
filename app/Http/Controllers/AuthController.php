@@ -18,7 +18,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
         ]);
-
+        
         $user = User::create([
             'fName' => $request->fName,
             'mName' => $request->mName,
