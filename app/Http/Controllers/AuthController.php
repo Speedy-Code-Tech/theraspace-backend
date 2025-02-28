@@ -18,7 +18,6 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
         ]);
-        
         $user = User::create([
             'fName' => $request->fName,
             'mName' => $request->mName,
@@ -43,9 +42,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return response()->json(['msg' => "Wrong Credentials"], 404);   
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
