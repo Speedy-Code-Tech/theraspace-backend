@@ -3,6 +3,8 @@
 use App\Http\Controllers\API\Admin\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChildrenController;
+use App\Http\Controllers\OTPController;
+use App\Http\Controllers\TheraphistConrtoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,3 +26,11 @@ Route::prefix('child')->middleware('auth:sanctum')->group(function () {
     Route::get('/{id}', [ChildrenController::class, 'show']);
     Route::post('/delete', [ChildrenController::class, 'destroy']);
 });
+
+Route::prefix('theraphist')->middleware('auth:sanctum')->group(function () {
+    Route::post('/add', [TheraphistConrtoller::class, 'store']);
+    Route::get('/{id}', [TheraphistConrtoller::class, 'show']);
+    Route::post('/delete', [TheraphistConrtoller::class, 'destroy']);
+});
+
+Route::post('/send-otp', [OTPController::class, 'sendOTP']);
