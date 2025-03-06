@@ -4,33 +4,69 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
-    {
-        $request->validate([
-            'fName' => 'required|string|max:255',
-            'mName' => 'nullable|string|max:255',
-            'lName' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
-        $user = User::create([
-            'fName' => $request->fName,
-            'mName' => $request->mName,
-            'lName' => $request->lName,
-            'email' => $request->email,
-            'password' => Hash::make($request->password), // Ensure password is hashed
-        ]);
+   
+{
+    // Validate OTP and email first
+    $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|digits:6',
+    ]);
+
+    $email = $request->email;
+    $storedOtp = Cache::get('otp_' . $email);
+
+    if (!$storedOtp || $storedOtp != $request->otp) {
+        return response()->json(['message' => 'Invalid or expired OTP'], 400);
+    }
+
+    // OTP verified, clear stored OTP and attempts
+    Cache::forget('otp_' . $email);
+    Cache::forget('otp_attempts_' . $email);
+
+    // Check if user exists
+    $existingUser = User::where('email', $email)->first();
+
+    if ($existingUser) {
+        // Update user status if they exist
+        $existingUser->update(['status' => "verified"]);
 
         return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
+            'message' => 'OTP verified successfully',
+            'user' => $existingUser
+        ]);
     }
+
+    // If user doesn't exist, validate registration fields
+    $request->validate([
+        'fName' => 'required|string|max:255',
+        'mName' => 'nullable|string|max:255',
+        'lName' => 'required|string|max:255',
+        'password' => 'required|string|min:8',
+    ]);
+
+    // Create new user
+    $user = User::create([
+        'fName' => $request->fName,
+        'mName' => $request->mName,
+        'lName' => $request->lName,
+        'email' => $email, // Use validated email
+        'password' => Hash::make($request->password),
+        'status' => 'verified', // Mark as verified upon creation   
+    ]);
+
+    return response()->json([
+        'message' => 'User registered successfullys',
+        'user' => $user
+    ], 201);
+}
+
 
     public function login(Request $request)
     {
@@ -40,7 +76,12 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-
+        if($user->status==='pending')
+            return response()->json([
+                'message' => 'Account is not yet verified',
+                'user' => null
+            ]);
+            
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['msg' => "Wrong Credentials"], 404);   
         }
@@ -60,5 +101,9 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    public function edit(){
+        
     }
 }

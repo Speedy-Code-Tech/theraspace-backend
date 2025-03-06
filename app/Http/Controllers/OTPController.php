@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\MailHelper;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 class OTPController extends Controller
@@ -63,7 +64,10 @@ class OTPController extends Controller
         // OTP verified, reset attempts
         Cache::forget('otp_' . $email);
         Cache::forget('otp_attempts_' . $email);
-    
+        if(User::where('email',$email)->exists()){
+            User::where('email',$email)->update(['status'=>"verified"]);
+            return response()->json(['message' => 'OTP verified successfully','user'=>User::where('email',$email)->first()]);
+        }
         return response()->json(['message' => 'OTP verified successfully']);
     }
 }

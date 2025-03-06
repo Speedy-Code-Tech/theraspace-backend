@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appointments', function (Blueprint $table) {
+        Schema::create('schedule', function (Blueprint $table) {
             $table->id();
-            $table->date('appointment_date');
-            $table->time('appointment_time');
-            $table->string('status')->default('pending');
-            $table->text('notes')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('dates');
             $table->timestamps();
         });
     }
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appointments');
+        Schema::dropIfExists('schedule');
     }
 };
