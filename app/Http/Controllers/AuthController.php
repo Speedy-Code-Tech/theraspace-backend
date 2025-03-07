@@ -59,6 +59,7 @@ class AuthController extends Controller
         'email' => $email, // Use validated email
         'password' => Hash::make($request->password),
         'status' => 'verified', // Mark as verified upon creation   
+        'role'=>'user'
     ]);
 
     return response()->json([
@@ -103,7 +104,32 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
-    public function edit(){
-        
-    }
+    public function edit(Request $request)
+{
+    $user = $request->user(); // Get authenticated user
+
+    $request->validate([
+        'fName' => 'nullable|string|max:255',
+        'mName' => 'nullable|string|max:255',
+        'lName' => 'nullable|string|max:255',
+        'email' => 'nullable|email|unique:users,email,' . $user->id,
+        'password' => 'nullable|string|min:8|confirmed',
+        'role'=>'nullable'
+    ]);
+
+    // Update user fields if provided
+    $user->update([
+        'fName' => $request->fName ?? $user->fName,
+        'mName' => $request->mName ?? $user->mName,
+        'lName' => $request->lName ?? $user->lName,
+        'email' => $request->email ?? $user->email,
+        'password' => $request->password ? Hash::make($request->password) : $user->password,
+        'role'=>$request->role
+    ]);
+
+    return response()->json([
+        'message' => 'User details updated successfully',
+        'user' => $user
+    ]);
+}
 }

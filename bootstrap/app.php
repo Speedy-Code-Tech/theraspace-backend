@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,10 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Append Laravel's built-in CORS middleware
         $middleware->append(HandleCors::class);
+        $middleware->alias([
+            'role'=>RoleMiddleware::class
+        ]);
         $middleware->group('api', [
             EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);
+       
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

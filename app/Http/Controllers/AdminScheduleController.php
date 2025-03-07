@@ -25,6 +25,7 @@ class AdminScheduleController extends Controller
         $request->validate([
             'dates' => 'required|array', // Ensure dates is an array
         ]);
+
     
         AdminSchedule::truncate(); // Remove all previous records
     
