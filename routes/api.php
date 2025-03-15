@@ -35,7 +35,7 @@ Route::prefix('child')->middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('appointment')->middleware(['auth:sanctum', 'role:user'])->group(function () {
+Route::prefix('appointment')->group(function () {
     Route::get('/', [AppointmentController::class, 'index']);
     Route::post('/add', [AppointmentController::class, 'store']);
     Route::get('/{id}', [AppointmentController::class, 'show']);
@@ -52,4 +52,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin'])->group(functi
     });
 
     Route::post('/schedule', [AdminScheduleController::class, 'store']);
+
+    Route::prefix('appointment')->group(function () {
+        Route::get('/', [AppointmentController::class, 'index']);
+        Route::post('/edit/{id}', [AppointmentController::class, 'status']);
+    });
 });

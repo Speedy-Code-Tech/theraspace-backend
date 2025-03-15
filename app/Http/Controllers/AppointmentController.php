@@ -95,4 +95,17 @@ class AppointmentController extends Controller
             ], 500);
         }
     }
+
+    public function status($id, Request $request)
+    {
+        $request->validate(['status' => 'required|string']);
+
+        $status = Appointment::find($id);
+        $status->status = $request->status;
+        $status->notes = $request->notes;
+        if ($status->save())
+            return response()->json([
+                'message' => 'Appointment updated  successfully'
+            ], 200);
+    }
 }
